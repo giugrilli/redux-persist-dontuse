@@ -1,0 +1,37 @@
+// @flow
+
+/*
+  autoMergeLevel1: 
+    - merges 1 level of substate
+    - skips substate if already modified
+*/
+
+import type { PersistConfig } from '../types'
+import R from 'ramda'
+
+export default function autoMergeLevel1<State: Object>(
+  inboundState: State,
+  originalState: State,
+  reducedState: State,
+  { debug }: PersistConfig
+): State {
+  let newState = { ...reducedState }
+  // only rehydrate if inboundState exists and is an object
+  if (inboundState && typeof inboundState === 'object') {
+    newState = R.mergeLeft(originalState, inboundState)
+  }
+
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    debug &&
+    inboundState &&
+    typeof inboundState === 'object'
+  )
+    console.log(
+      `redux-persist/stateReconciler: rehydrated keys '${Object.keys(
+        inboundState
+      ).join(', ')}'`
+    )
+
+  return newState
+}
